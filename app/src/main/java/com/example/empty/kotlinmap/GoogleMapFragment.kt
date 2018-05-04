@@ -2,7 +2,6 @@ package com.example.empty.kotlinmap
 
 import android.graphics.Point
 import android.graphics.Rect
-import android.graphics.RectF
 import android.support.v4.app.Fragment
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,15 +10,14 @@ import android.view.ViewGroup
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.PolygonOptions
 import kotlinx.android.synthetic.main.fragment_map.*
-import android.util.TypedValue
 import com.google.android.gms.maps.*
+import kotlinx.android.synthetic.main.fragment_map.view.*
 
 
 class GoogleMapFragment : Fragment(), OnMapReadyCallback {
 
     var map: GoogleMap? = null
     lateinit var mapView: MapView
-    //val rectf:RectF
 
     override fun onMapReady(p0: GoogleMap?) {
         map = p0
@@ -47,6 +45,8 @@ class GoogleMapFragment : Fragment(), OnMapReadyCallback {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_map, container, false)
 
+        mapView = view.map_view
+
 
         return view
     }
@@ -54,40 +54,27 @@ class GoogleMapFragment : Fragment(), OnMapReadyCallback {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        mapView = view.findViewById(R.id.mapView)
-
         mapView.onCreate(savedInstanceState)
 
-
-        showPosition.setOnClickListener { onShowPositionClick() }
-
         mapView.getMapAsync(this)
+
+        view.show_position_button.setOnClickListener { onShowPositionClick() }
+
     }
 
 
-
-
     private fun onShowPositionClick() {
-
-
-       // val r = resources
-        //val px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 14F, r.displayMetrics)
-
-
         val rect = Rect()
-        square.getGlobalVisibleRect(rect)
+        val squareCardies = IntArray(2)
 
-        val height = -100
+        square_image.getLocationInWindow(squareCardies)
+        square_image.getLocalVisibleRect(rect)
+        
 
-        val nw = map!!.projection.fromScreenLocation(Point(rect.left, rect.top+height))
-        val se = map!!.projection.fromScreenLocation(Point(rect.right, rect.bottom+height))
-        val ne = map!!.projection.fromScreenLocation(Point(rect.right, rect.top+height))
-        val sw = map!!.projection.fromScreenLocation(Point(rect.left, rect.bottom+height))
-
-
-
-        println(rect.top)
-
+        val nw = map!!.projection.fromScreenLocation(Point((square_image.x + rect.left).toInt(), (square_image.y + rect.top).toInt()))
+        val se = map!!.projection.fromScreenLocation(Point((square_image.x + rect.right).toInt(), (square_image.y + rect.bottom).toInt()))
+        val ne = map!!.projection.fromScreenLocation(Point((square_image.x + rect.right).toInt(), (square_image.y + rect.top).toInt()))
+        val sw = map!!.projection.fromScreenLocation(Point((square_image.x + rect.left).toInt(), (square_image.y + rect.bottom).toInt()))
 
         val po = PolygonOptions().apply {
             add(nw)
@@ -95,6 +82,8 @@ class GoogleMapFragment : Fragment(), OnMapReadyCallback {
             add(se)
             add(sw)
         }
+
+
 
         map!!.addPolygon(po)
 
